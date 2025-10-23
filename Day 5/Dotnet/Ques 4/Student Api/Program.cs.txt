@@ -1,0 +1,52 @@
+using Microsoft.EntityFrameworkCore;
+using StudentApi.Data;
+using StudentApi.Models;
+
+
+var builder = WebApplication.CreateBuilder(args);
+
+
+// Add services
+builder.Services.AddControllers();
+builder.Services.AddDbContext<StudentContext>(options =>
+options.UseInMemoryDatabase("StudentsDb"));
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+
+var app = builder.Build();
+
+
+// Configure pipeline
+if (app.Environment.IsDevelopment())
+{
+app.UseDeveloperExceptionPage();
+app.UseSwagger();
+app.UseSwaggerUI();
+}
+
+
+app.UseHttpsRedirection();
+app.UseAuthorization();
+app.MapControllers();
+
+
+// Seed sample data
+using (var scope = app.Services.CreateScope())
+{
+var db = scope.ServiceProvider.GetRequiredService<StudentContext>();
+if (!db.Students.Any())
+{
+db.Students.AddRange(new List<Student>
+{
+new Student { Name = "Alice", Marks = 85 },
+new Student { Name = "Bob", Marks = 72 },
+new Student { Name = "Charlie", Marks = 91 },
+new Student { Name = "Diana", Marks = 64 }
+});
+db.SaveChanges();
+}
+}
+
+
+app.Run();
